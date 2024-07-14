@@ -19,7 +19,7 @@ export const calcPercentageIncrease = (startValue, currentValue) => {
     return null;
   }
 
-  const percentResult = ((current - start) / current) * 100;
+  const percentResult = ((current - start) / start) * 100;
   const growthResult = 1 + percentResult / 100;
   const m1Result = currentValue * growthResult;
   const m2Result = m1Result * growthResult;
