@@ -42,7 +42,7 @@ export const calcUtilisation = (used, totalSize) => {
   const used_ = parseFloat(used.replace(/,/g, ""));
 
   const utilResult = (used_ / totSize) * 100;
-  return utilResult;
+  return utilResult.toFixed(2);
 
 
 };
