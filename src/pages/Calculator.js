@@ -5,7 +5,7 @@ import {
 } from "../helper/CalculationAll";
 import { SendIcon } from "../Icon/Icon";
 import { Clippasteicon } from "../Icon/Icon";
-
+let utilR = 0;
 const copyToClipboard = (text) => {
   navigator.clipboard
     .writeText(text)
@@ -26,7 +26,7 @@ const inputUtilFields = [
 
 const inputSizeField = [
   { label: "Used space :", key: "used" },
-  { label: "Total Space : ", key: "totSize" },
+  { label: "Total Space : ", key: "totalSize" },
 ];
 
 function Calculator() {
@@ -41,6 +41,7 @@ function Calculator() {
   });
 
   const [calculations, setCalculations] = useState([]);
+  const [util, setUtil] = useState(null);
   const [utilisation, setUtilisation] = useState(null);
 
   const handleChange = (key, value) => {
@@ -50,26 +51,25 @@ function Calculator() {
       ...valueSC,
       [key]: numericValue,
     });
+    setValueUtil({
+      ...valueUtil,
+      [key]: numericValue,
+    });
   };
-
+  
   const handleCalculateUtil = async () => {
     const { used, totalSize } = valueUtil;
     try {
       const utilResult = await calcUtilisation(used, totalSize);
-      // setValueUtil({
-      //   used: utilResult.used,
-      //   totalSize: utilResult.totalSize,
-      // });
-      const newUtil = {
+      setUtil({
         used: utilResult.used,
         totalSize: utilResult.totalSize,
-      };
-      setUtilisation([newUtil]);
-      console.log(newUtil);
+      });
       console.log("Utilisation calculated:", utilResult);
+      utilR = utilResult;
     } catch (error) {
       console.error("Error calculating utilisation:", error);
-      console.log(utilisation);
+      setUtil(null); // Reset util state if calculation fails
     }
   };
 
@@ -103,15 +103,16 @@ function Calculator() {
       currentValue: "",
     });
     setValueUtil({
-      startValue: "",
-      currentValue: "",
+      used: "",
+      totalSize: "",
     });
     setUtilisation(null);
     setCalculations([]);
+    setUtil(null);
   };
 
   const hasCalculations = calculations.length > 0;
-  const hasUtilCalculation = utilisation !== null;
+  const hasUtilCalculation = util !== null;
 
   return (
     <div className="w-full h-screen flex items-center justify-center p-4">
@@ -138,7 +139,7 @@ function Calculator() {
                     id={field.key}
                     type="text"
                     placeholder="eg: 1,234"
-                    value={valueUtil[field.key]} // Use `values` instead of `valueUtil`
+                    value={valueUtil[field.key]}
                     onChange={(e) => handleChange(field.key, e.target.value)}
                     className="bg-slate-500 text-white rounded-lg p-2 border border-gray-300 text-sm md:text-md"
                   />
@@ -148,10 +149,7 @@ function Calculator() {
           </div>
           <div className="p-2">
             <button
-              onClick={() => {
-                // console.log(newUtil);
-                handleCalculateUtil();
-              }}
+              onClick={handleCalculateUtil}
               className="p-2 bg-slate-300 hover:bg-slate-200 rounded-lg transition-colors duration-300"
             >
               <SendIcon />
@@ -174,15 +172,7 @@ function Calculator() {
           ))}
           <div className="p-2 flex gap-x-4 text-sm md:text-md">
             <button
-              onClick={() => {
-                console.log(
-                  "Start Value : " +
-                    valueSC.startValue +
-                    "\nCurrent Value : " +
-                    valueSC.currentValue
-                );
-                handleCalculateGrowth();
-              }}
+              onClick={handleCalculateGrowth}
               className="bg-teal-700 p-2 rounded-lg md:w-1/2 w-full mt-10 hover:bg-teal-400 transition-colors duration-300"
             >
               Calculate
@@ -200,14 +190,11 @@ function Calculator() {
           <div className="overflow-auto p-4 text-lg md:text-sm text-center shadow-inner flex flex-col">
             <div className="flex gap-x-2 items-center">
               <div className="text-start text-xs md:text-md">
-                Utilisation :{" "}
-                {hasUtilCalculation ? utilisation.utilResult : "No Calculation"}
+                Utilisation : {hasUtilCalculation ? utilR : "No Calculation"}
               </div>
               <button
                 onClick={() => {
-                  copyToClipboard(
-                    hasUtilCalculation ? utilisation.utilResult : ""
-                  );
+                  copyToClipboard(utilR);
                 }}
               >
                 <Clippasteicon />
